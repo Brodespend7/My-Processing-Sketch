@@ -1,0 +1,28 @@
+// brodden Spendlove |8/24/26 |ShapeGame
+int x,y;
+
+void setup() { // runs once at startup
+  size(500,800);
+  background(#71A6D2);
+  frameRate(60);
+  x = width/2;
+  y = height/2;
+}
+
+void draw () {
+  background(#71A6D2);
+  fill(25,92,4);
+  ellipse(x,y,50,50);
+}
+
+void keyPressed() {
+ if(key =='s' || key == 'S') {
+   y  = y + 10;
+ } else if(key =='w' || key == 'W') {
+   y = y - 10;
+ } else if(key =='a' || key == 'A') {
+  x = x - 10;
+ } else if(key =='d' || key == 'D') {
+  x = x + 10;
+ }
+}
