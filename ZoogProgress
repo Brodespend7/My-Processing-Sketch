@@ -1,0 +1,26 @@
+// Brodden Spendlove | aug 24 2026 | Zoog
+
+void setup() { // setup runs once at startup
+  size(500,600);
+  frameRate(60);
+}
+
+void draw() { // runs on an 60 fps loop
+  background(30,239.250);
+  drawZoog(100,100);
+  drawZoog(mouseX,mouseY);
+}  
+
+void drawZoog(int x, int y) {
+  rectMode(CENTER);
+  fill(0,10,239);
+  rect(x,y+90,100,120,900); // Zoog's body
+  fill(0,255,0);
+  ellipse(x,y,80,100); // Zoog's Head
+  fill(255);
+  ellipse(x-20,y-20,12,12); // Zoog's Left Eye
+  ellipse(x+20,y-20,12,12); // Zoog's right Eye
+  line(x-10,y,x+10,y);
+
+
+}
