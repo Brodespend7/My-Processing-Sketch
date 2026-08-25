@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Python Quest: Practice & Sandbox Edition</title>
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --panel-bg: #161b22;
+      --text-color: #c9d1d9;
+      --accent-green: #2ea043;
+      --accent-blue: #58a6ff;
+      --accent-red: #f85149;
+      --accent-yellow: #d29922;
+      --accent-purple: #a371f7;
+      --border-color: #30363d;
+      --font-stack: 'Courier New', Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-stack);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 1100px;
+      background-color: var(--panel-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-bar {
+      display: flex;
+      background-color: #010409;
+      border-bottom: 2px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      flex: 1;
+      min-width: 110px;
+      padding: 12px;
+      background: none;
+      border: none;
+      color: #8b949e;
+      font-family: var(--font-stack);
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover { color: var(--text-color); background-color: rgba(255,255,255,0.02); }
+    .tab-btn.active {
+      color: var(--accent-blue);
+      border-bottom: 3px solid var(--accent-blue);
+      background-color: var(--panel-bg);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .header {
+      background-color: #21262d;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .title { font-size: 1.1rem; color: var(--accent-blue); font-weight: bold; }
+    .stats { display: flex; gap: 20px; font-weight: bold; }
+    .stat-hp { color: var(--accent-red); }
+    .stat-score { color: var(--accent-yellow); }
+    .stat-level { color: var(--accent-green); }
+
+    .main-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 420px;
+    }
+
+    @media (max-width: 768px) {
+      .main-area { grid-template-columns: 1fr; }
+    }
+
+    .screen-panel {
+      padding: 20px;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .enemy-display { text-align: center; }
+    .enemy-avatar { font-size: 3.5rem; margin: 5px 0; transition: transform 0.2s; }
+    .enemy-avatar.shake { animation: shake 0.3s; }
+
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-8px, 0); }
+      50% { transform: translate(8px, 0); }
+      75% { transform: translate(-4px, 0); }
+      100% { transform: translate(0, 0); }
+    }
+
+    .dialogue-box {
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .hint-box {
+      background-color: #1c2128;
+      border-left: 4px solid var(--accent-yellow);
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .editor-panel {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      background-color: #0d1117;
+    }
+
+    .prompt-text { font-size: 0.9rem; margin-bottom: 8px; color: #8b949e; }
+
+    .code-area, .input-field {
+      width: 100%;
+      background-color: #161b22;
+      color: #e6edf3;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 10px;
+      font-family: var(--font-stack);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .code-area { height: 220px; resize: vertical; tab-size: 4; }
+    .code-area:focus, .input-field:focus { border-color: var(--accent-blue); }
+
+    .controls { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+
+    .btn {
+      background-color: var(--accent-green);
+      color: #ffffff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-family: var(--font-stack);
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .btn:hover { opacity: 0.9; }
+    .btn-secondary { background-color: var(--border-color); }
+    .btn-warning { background-color: var(--accent-yellow); color: #000; }
+    .btn-purple { background-color: var(--accent-purple); color: #fff; }
+
+    .console-output {
+      padding: 15px;
+      background-color: #010409;
+      border-top: 1px solid var(--border-color);
+      min-height: 85px;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+    }
+
+    .console-output.success { color: var(--accent-green); }
+    .console-output.error { color: var(--accent-red); }
+
+    .guide-container, .levels-container, .builder-container, .practice-container, .sandbox-container {
+      padding: 25px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      background-color: #161b22;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      border-radius: 4px;
+      font-family: var(--font-stack);
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 15px;
+    }
+
+    .guide-card {
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 15px;
+    }
+
+    .guide-card h4 { color: var(--accent-blue); margin-bottom: 6px; font-size: 0.95rem; }
+    .guide-card p { font-size: 0.82rem; color: #8b949e; margin-bottom: 8px; line-height: 1.3; }
+
+    .guide-code {
+      background-color: #161b22;
+      color: var(--accent-green);
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      border: 1px solid #21262d;
+    }
+
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+    }
+
+    .level-card {
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      padding: 15px;
+      border-radius: 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: border 0.2s;
+    }
+
+    .level-card:hover { border-color: var(--accent-blue); }
+    .level-card.completed { border-color: var(--accent-green); }
+    .level-card.custom { border-color: var(--accent-purple); }
+
+    .builder-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: 0.85rem; color: var(--accent-blue); font-weight: bold; }
+
+    .practice-setup {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+      padding: 20px 0;
+    }
+
+    .timer-btn-group { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+
+    .timer-card {
+      background-color: var(--bg-color);
+      border: 2px solid var(--border-color);
+      padding: 20px;
+      border-radius: 8px;
+      width: 140px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .timer-card:hover, .timer-card.selected {
+      border-color: var(--accent-yellow);
+      background-color: #1c2128;
+    }
+
+    .timer-card h3 { color: var(--accent-yellow); font-size: 1.3rem; margin-bottom: 5px; }
+
+    .results-screen {
+      text-align: center;
+      padding: 30px;
+      background-color: var(--bg-color);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      background-color: var(--accent-purple);
+      color: #fff;
+    }
+
+    .error-card {
+      background-color: rgba(248, 81, 73, 0.1);
+      border: 1px solid var(--accent-red);
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+
+    .error-card.clean {
+      background-color: rgba(46, 160, 67, 0.1);
+      border-color: var(--accent-green);
+    }
+
+    .error-card h5 {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .feature-info-box {
+      background-color: #161b22;
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-blue);
+      border-radius: 6px;
+      padding: 15px;
+      margin-top: 15px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<div class="game-container">
+  
+  <div class="tab-bar">
+    <button class="tab-btn active" id="btn-game" onclick="switchTab('game')">🎮 Game</button>
+    <button class="tab-btn" id="btn-practice" onclick="switchTab('practice')">⚡ Speed Practice</button>
+    <button class="tab-btn" id="btn-sandbox" onclick="switchTab('sandbox')">💻 Free Editor & Debugger</button>
+    <button class="tab-btn" id="btn-levels" onclick="switchTab('levels')">🗺️ Level Map</button>
+    <button class="tab-btn" id="btn-builder" onclick="switchTab('builder')">🛠️ Level Creator</button>
+    <button class="tab-btn" id="btn-guide" onclick="switchTab('guide')">📖 Cheat Sheet</button>
+  </div>
+
+  <!-- GAME TAB -->
+  <div id="tab-game" class="tab-content active">
+    <div class="header">
+      <div class="title" id="stage-title">LEVEL 1</div>
+      <div class="stats">
+        <span class="stat-hp">HP: <span id="hp">100</span></span>
+        <span class="stat-score">XP: <span id="score">0</span></span>
+        <span class="stat-level">Level: <span id="level">1</span></span>
+      </div>
+    </div>
+
+    <div class="main-area">
+      <div class="screen-panel">
+        <div>
+          <div class="enemy-display">
+            <div class="enemy-avatar" id="enemy-sprite">👾</div>
+            <h3 id="enemy-name">Syntax Bug</h3>
+          </div>
+          <div class="dialogue-box" id="challenge-desc">Loading...</div>
+        </div>
+        
+        <div class="hint-box">
+          <strong style="color: var(--accent-yellow);">💡 HINT:</strong><br/>
+          <span id="hint-text">Read the instructions carefully.</span>
+        </div>
+      </div>
+
+      <div class="editor-panel">
+        <div class="prompt-text">Type your Python code (Auto-closing enabled):</div>
+        <textarea id="code-input" class="code-area" spellcheck="false"></textarea>
+        <div class="controls">
+          <button class="btn btn-secondary" onclick="resetCode()">Reset</button>
+          <button class="btn btn-warning" onclick="toggleSolution()">Show Solution</button>
+          <button class="btn" onclick="runCode()">Run Code</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-output" id="console">
+      [System] Select a level or write code to begin!
+    </div>
+  </div>
+
+  <!-- SPEED PRACTICE TAB -->
+  <div id="tab-practice" class="tab-content">
+    <div class="practice-container">
+      <div id="practice-setup" class="practice-setup">
+        <h2 style="color: var(--accent-yellow);">⚡ Speed Practice Challenge</h2>
+        <p style="color: #8b949e; max-width: 500px;">Solve dynamically generated Python challenges against the clock. Automated hints will unlock if you get stuck!</p>
+        
+        <div style="margin-top: 10px;">
+          <label style="color: var(--accent-blue); font-weight: bold;">Select Time Limit:</label>
+        </div>
+        
+        <div class="timer-btn-group">
+          <div class="timer-card selected" onclick="selectTime(30, this)">
+            <h3>30s</h3>
+            <p style="font-size:0.75rem; color:#8b949e;">Sprint Run</p>
+          </div>
+          <div class="timer-card" onclick="selectTime(60, this)">
+            <h3>1 Min</h3>
+            <p style="font-size:0.75rem; color:#8b949e;">Standard Run</p>
+          </div>
+          <div class="timer-card" onclick="selectTime(300, this)">
+            <h3>5 Min</h3>
+            <p style="font-size:0.75rem; color:#8b949e;">Marathon</p>
+          </div>
+        </div>
+
+        <button class="btn btn-purple" style="font-size: 1.1rem; padding: 12px 30px;" onclick="startPracticeMode()">🚀 Start Practice</button>
+      </div>
+
+      <div id="practice-active" style="display: none;">
+        <div class="header" style="border-radius: 6px; margin-bottom: 15px;">
+          <div class="title" style="color: var(--accent-yellow);">⏱️ Time Left: <span id="practice-time">60</span>s</div>
+          <div class="stats">
+            <span class="stat-score">Solved: <span id="practice-solved">0</span></span>
+            <span class="stat-level">Practice Score: <span id="practice-score">0</span></span>
+          </div>
+        </div>
+
+        <div class="main-area" style="min-height: 350px;">
+          <div class="screen-panel">
+            <div>
+              <span class="badge" id="practice-category">Category</span>
+              <h3 id="practice-title" style="color: var(--accent-blue); margin: 10px 0;">Challenge</h3>
+              <div class="dialogue-box" id="practice-desc">Generating task...</div>
+            </div>
+            
+            <div class="hint-box" id="practice-hint-box" style="display: none;">
+              <strong style="color: var(--accent-yellow);">💡 AUTOMATED ASSISTANCE:</strong><br/>
+              <span id="practice-hint-text">Hint will appear here...</span>
+            </div>
+          </div>
+
+          <div class="editor-panel">
+            <div class="prompt-text">Type your Python solution:</div>
+            <textarea id="practice-code" class="code-area" spellcheck="false" placeholder="# Type Python code here..."></textarea>
+            <div class="controls">
+              <button class="btn btn-warning" onclick="requestPracticeHelp()">💡 Instant Help</button>
+              <button class="btn" onclick="submitPracticeCode()">Submit Solution ➔</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="console-output" id="practice-console" style="margin-top: 15px; border-radius: 6px;">
+          [Practice System] Timer starting! Answer as many problems as you can!
+        </div>
+      </div>
+
+      <div id="practice-results" class="results-screen" style="display: none;">
+        <h1 style="color: var(--accent-green); font-size: 2.2rem; margin-bottom: 10px;">🎉 Time's Up!</h1>
+        <p style="color: #8b949e; margin-bottom: 20px;">Great workout! Here is your performance summary:</p>
+        
+        <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 25px;">
+          <div>
+            <div style="font-size: 2rem; font-weight: bold; color: var(--accent-yellow);" id="res-score">0</div>
+            <div style="font-size: 0.8rem; color: #8b949e;">Total Score</div>
+          </div>
+          <div>
+            <div style="font-size: 2rem; font-weight: bold; color: var(--accent-blue);" id="res-solved">0</div>
+            <div style="font-size: 0.8rem; color: #8b949e;">Solved</div>
+          </div>
+          <div>
+            <div style="font-size: 2rem; font-weight: bold; color: var(--accent-purple);" id="res-hints">0</div>
+            <div style="font-size: 0.8rem; color: #8b949e;">Hints Used</div>
+          </div>
+        </div>
+
+        <button class="btn btn-purple" onclick="resetPracticeSetup()">🔄 Practice Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FREE EDITOR & DEBUGGER TAB -->
+  <div id="tab-sandbox" class="tab-content">
+    <div class="sandbox-container">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="color: var(--accent-blue);">💻 Free Coding Sandbox & Error Inspector</h2>
+        <span style="font-size: 0.8rem; color: #8b949e;">✨ Auto-Closing Bracket Pair completion is active!</span>
+      </div>
+
+      <div class="main-area" style="min-height: 380px;">
+        <div class="editor-panel" style="border-right: 1px solid var(--border-color);">
+          <div class="prompt-text">Python Code Editor:</div>
+          <textarea id="sandbox-code" class="code-area" style="height: 280px;" spellcheck="false" placeholder="# Write any Python code here...
+x = 10
+if x > 5:
+    print('x is large!')
+else:
+    print('x is small')"></textarea>
+          
+          <div class="controls">
+            <button class="btn" onclick="runSandboxCode()">▶ Run & Execute</button>
+            <button class="btn btn-warning" onclick="analyzeSandboxCode()">🔍 Analyze & Inspect Errors</button>
+            <button class="btn btn-secondary" onclick="clearSandbox()">🗑️ Clear</button>
+          </div>
+        </div>
+
+        <div class="screen-panel" style="border-right: none;">
+          <div>
+            <h3 style="color: var(--accent-purple); margin-bottom: 8px;">📊 Real-Time Console Output</h3>
+            <div class="console-output" id="sandbox-output" style="height: 120px; border: 1px solid var(--border-color); border-radius: 4px; overflow-y: auto;">
+[Console Ready] Click "Run & Execute" to test your code.
+            </div>
+          </div>
+
+          <div>
+            <h3 style="color: var(--accent-yellow); margin-bottom: 8px;">🛡️ Error Inspector & Diagnoser</h3>
+            <div id="inspector-result">
+              <div class="error-card clean">
+                <h5>✅ System Ready</h5>
+                Write code on the left. If you have errors, this panel will identify the line, explain what went wrong, and show you how to fix it!
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUTO-CLOSING BRACKET FEATURE DETAILS -->
+      <div class="feature-info-box">
+        <h4 style="color: var(--accent-blue); margin-bottom: 6px;">⚡ Integrated Feature: Auto-Closing Characters (Bracket Pair Completion)</h4>
+        <p><strong>How It Works:</strong> Typing an opening symbol automatically inserts the matching closing character and positions your cursor inside.</p>
+        <p style="margin-top: 4px;">• Works for parentheses <code>()</code>, brackets <code>[]</code>, braces <code>{}</code>, and quotes <code>""</code> or <code>''</code>.</p>
+        <p>• Helps developers write faster and prevents syntax errors caused by forgotten closing symbols.</p>
+        
+        <div style="margin-top: 10px; font-weight: bold; color: var(--accent-yellow);">Popular Editors That Use It:</div>
+        <ul style="margin-left: 20px; font-size: 0.8rem; color: #8b949e;">
+          <li><strong>VS Code:</strong> Refers to it as <em>Auto Closing Brackets</em> in settings.</li>
+          <li><strong>Cursor / IntelliJ:</strong> Refers to it as <em>Smart Keys</em> or <em>Insert Pair Bracket</em>.</li>
+          <li><strong>Sublime Text:</strong> Calls it <em>Auto Pair completion</em>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEVEL MAP TAB -->
+  <div id="tab-levels" class="tab-content">
+    <div class="levels-container">
+      <h2 style="color: var(--accent-blue); margin-bottom: 15px;">Select a Level</h2>
+      <div class="level-grid" id="level-select-grid"></div>
+    </div>
+  </div>
+
+  <!-- LEVEL CREATOR TAB -->
+  <div id="tab-builder" class="tab-content">
+    <div class="builder-container">
+      <h2 style="color: var(--accent-purple); text-align: center; margin-bottom: 10px;">🛠️ Create Your Own Level</h2>
+      <p style="text-align: center; font-size: 0.85rem; color: #8b949e; margin-bottom: 20px;">Design custom coding challenges to play yourself or share with friends!</p>
+      
+      <div class="builder-form">
+        <div class="form-group">
+          <label>Level Name / Title:</label>
+          <input type="text" id="build-title" class="input-field" placeholder="e.g., Level 13: Variable Master">
+        </div>
+
+        <div class="form-group">
+          <label>Enemy Name & Emoji Avatar:</label>
+          <div style="display: flex; gap: 10px;">
+            <input type="text" id="build-sprite" class="input-field" placeholder="👾" style="width: 70px; text-align: center;">
+            <input type="text" id="build-enemy" class="input-field" placeholder="e.g., Code Specter" style="flex: 1;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Task Instructions:</label>
+          <textarea id="build-desc" class="input-field" style="height: 60px;" placeholder="Describe what the player needs to code..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Initial Starter Code:</label>
+          <textarea id="build-initial" class="input-field" style="height: 50px;" placeholder="# Write code below..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Hint Text:</label>
+          <input type="text" id="build-hint" class="input-field" placeholder="Provide a helpful hint...">
+        </div>
+
+        <div class="form-group">
+          <label>Exact Target Solution Code:</label>
+          <input type="text" id="build-solution" class="input-field" placeholder="e.g., player_speed = 5">
+        </div>
+
+        <button class="btn btn-purple" style="margin-top: 10px; padding: 12px;" onclick="saveCustomLevel()">✨ Build & Save Level</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHEAT SHEET TAB -->
+  <div id="tab-guide" class="tab-content">
+    <div class="guide-container">
+      <h2 style="color: var(--accent-blue); margin-bottom: 10px;">Python Cheat Sheet Reference</h2>
+      <input type="text" id="search-cheat" class="search-box" placeholder="🔎 Search Python topics..." onkeyup="filterCheatSheet()">
+      <div class="guide-grid" id="cheat-sheet-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Web Audio Synthesizer
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === 'hit') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+    } else if (type === 'success') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+    } else if (type === 'error') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+    }
+  }
+
+  // AUTO-CLOSING BRACKET & SYMBOL COMPLETION LOGIC
+  function enableAutoPairing(textarea) {
+    const pairs = {
+      '(': ')',
+      '[': ']',
+      '{': '}',
+      '"': '"',
+      "'": "'"
+    };
+
+    textarea.addEventListener('keydown', function(e) {
+      if (pairs[e.key]) {
+        e.preventDefault();
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        const val = this.value;
+
+        // Insert pair
+        this.value = val.substring(0, start) + e.key + pairs[e.key] + val.substring(end);
+        
+        // Position cursor between brackets
+        this.selectionStart = this.selectionEnd = start + 1;
+      }
+    });
+  }
+
+  // Attach auto-closing logic to all code textareas
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.code-area').forEach(textarea => {
+      enableAutoPairing(textarea);
+    });
+  });
+
+  // CHEAT SHEET TOPICS
+  const cheatTopics = [
+    { id: 1, title: "Variables", desc: "Containers for storing data values.", code: "x = 10\nname = 'Hero'" },
+    { id: 2, title: "Strings", desc: "Text surrounded by single or double quotes.", code: "msg = \"Hello World\"" },
+    { id: 3, title: "Integers & Floats", desc: "Whole numbers vs numbers with decimals.", code: "hp = 100         # int\nrate = 3.14      # float" },
+    { id: 4, title: "Booleans", desc: "Represents True or False logic.", code: "is_active = True\nhas_key = False" },
+    { id: 5, title: "Comments", desc: "Notes skipped by the interpreter.", code: "# This is a single-line comment" },
+    { id: 6, title: "Print Function", desc: "Displays text/variables in the output.", code: "print(\"Score:\", score)" },
+    { id: 7, title: "User Input", desc: "Receives user input as a string.", code: "name = input(\"Enter name: \")" },
+    { id: 8, title: "Addition & Subtraction", desc: "Basic arithmetic operations.", code: "total = 10 + 5\nremaining = 20 - 3" },
+    { id: 9, title: "Multiplication & Division", desc: "Multiplication (*) and float division (/).", code: "area = 5 * 10\nratio = 10 / 2  # Returns 5.0" },
+    { id: 10, title: "Floor Division & Modulo", desc: "Integer division (//) and remainder (%).", code: "quotient = 10 // 3  # 3\nremainder = 10 % 3  # 1" },
+    { id: 11, title: "Auto Bracket Completion", desc: "Auto-inserts matching quotes or brackets to prevent missing symbol errors.", code: "# Type '(' -> produces '()'\n# Type '[' -> produces '[]'\n# Type '\"' -> produces '\"\"'" },
+    { id: 12, title: "If Statements", desc: "Executes block if condition is True.", code: "if hp > 0:\n    print('Alive')" },
+    { id: 13, title: "Elif & Else", desc: "Provides alternate branch conditions.", code: "if score > 90:\n    grade = 'A'\nelif score > 70:\n    grade = 'B'\nelse:\n    grade = 'C'" }
+  ];
+
+  const challenges = [
+    {
+      level: 1,
+      title: "Level 1: Variables & Strings",
+      enemy: "Syntax Bug",
+      sprite: "👾",
+      desc: "Assign the string <code>'Fireball'</code> to a variable named <code>spell</code>.",
+      initialCode: "# Assign variable below:\n",
+      hint: "Type: spell = 'Fireball'",
+      solution: "spell = 'Fireball'",
+      validate: (c) => /spell=['"]Fireball['"]/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 2,
+      title: "Level 2: Basic Math",
+      enemy: "Type Goblin",
+      sprite: "👺",
+      desc: "Set <code>hp</code> to 100 minus 25 using math subtraction.",
+      initialCode: "# Calculate hp:\nhp = \n",
+      hint: "Type: hp = 100 - 25",
+      solution: "hp = 100 - 25",
+      validate: (c) => /hp=100-25/.test(c.replace(/\s+/g, '')) || /hp=75/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 3,
+      title: "Level 3: Booleans",
+      enemy: "Shield Guard",
+      sprite: "🛡️",
+      desc: "Set the variable <code>is_ready</code> to the boolean value <code>True</code>.",
+      initialCode: "# Set is_ready:\n",
+      hint: "Booleans start with uppercase: is_ready = True",
+      solution: "is_ready = True",
+      validate: (c) => /is_ready=True/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 4,
+      title: "Level 4: If Conditionals",
+      enemy: "Logic Golem",
+      sprite: "🗿",
+      desc: "Write an <code>if</code> statement checking if <code>mana &gt; 10</code>. If true, set <code>can_cast = True</code>.",
+      initialCode: "mana = 20\ncan_cast = False\n\n# Write if condition below:\n",
+      hint: "if mana > 10:\n    can_cast = True",
+      solution: "mana = 20\ncan_cast = False\nif mana > 10:\n    can_cast = True",
+      validate: (c) => /ifmana>10:can_cast=True/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 5,
+      title: "Level 5: Lists",
+      enemy: "Array Hydra",
+      sprite: "🐍",
+      desc: "Create a list named <code>spells</code> containing <code>'fire'</code> and <code>'ice'</code>.",
+      initialCode: "# Create spells list:\n",
+      hint: "spells = ['fire', 'ice']",
+      solution: "spells = ['fire', 'ice']",
+      validate: (c) => /spells=\[['"]fire['"],['"]ice['"]\]/.test(c.replace(/\s+/g, ''))
+    }
+  ];
+
+  const practiceGenerators = [
+    {
+      category: "Variables & Math",
+      title: "Variable Declaration",
+      gen: () => {
+        const val = Math.floor(Math.random() * 50) + 10;
+        return {
+          desc: `Create a variable named <code>power</code> and set it to <code>${val}</code>.`,
+          hint: `power = ${val}`,
+          validate: (c) => new RegExp(`power\\s*=\\s*${val}`).test(c)
+        };
+      }
+    },
+    {
+      category: "Strings",
+      title: "String Concatenation",
+      gen: () => {
+        const words = ['Dragon', 'Knight', 'Wizard', 'Shadow', 'Phoenix'];
+        const word = words[Math.floor(Math.random() * words.length)];
+        return {
+          desc: `Assign the string <code>'${word}'</code> to a variable named <code>role</code>.`,
+          hint: `role = '${word}'`,
+          validate: (c) => new RegExp(`role\\s*=\\s*['"]${word}['"]`).test(c)
+        };
+      }
+    }
+  ];
+
+  let currentLevel = 0;
+  let playerHp = 100;
+  let score = 0;
+  let completedLevels = new Set();
+
+  let selectedPracticeTime = 30;
+  let practiceTimeLeft = 30;
+  let practiceTimerInterval = null;
+  let practiceQuestionTimer = 0;
+  let practiceScore = 0;
+  let practiceSolvedCount = 0;
+  let practiceHintsUsed = 0;
+  let currentPracticeProblem = null;
+
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+    document.getElementById(`btn-${tabName}`).classList.add('active');
+    if (tabName === 'levels') renderLevelMap();
+    if (tabName === 'guide') renderCheatSheet(cheatTopics);
+  }
+
+  function renderCheatSheet(topics) {
+    const grid = document.getElementById('cheat-sheet-grid');
+    grid.innerHTML = '';
+    topics.forEach(t => {
+      const card = document.createElement('div');
+      card.className = 'guide-card';
+      card.innerHTML = `
+        <h4>${t.id}. ${t.title}</h4>
+        <p>${t.desc}</p>
+        <div class="guide-code">${t.code}</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function filterCheatSheet() {
+    const q = document.getElementById('search-cheat').value.toLowerCase();
+    const filtered = cheatTopics.filter(t => 
+      t.title.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q) || t.code.toLowerCase().includes(q)
+    );
+    renderCheatSheet(filtered);
+  }
+
+  function renderLevelMap() {
+    const grid = document.getElementById('level-select-grid');
+    grid.innerHTML = '';
+    challenges.forEach((ch, idx) => {
+      const card = document.createElement('div');
+      const isCustom = ch.isCustom ? 'custom' : '';
+      const isComp = completedLevels.has(idx) ? 'completed' : '';
+      card.className = `level-card ${isCustom} ${isComp}`;
+      card.innerHTML = `
+        <div style="font-size: 2rem;">${ch.sprite}</div>
+        <div style="font-weight: bold; margin-top: 5px;">Level ${ch.level}</div>
+        <div style="font-size: 0.75rem; color: #8b949e;">${ch.enemy}</div>
+      `;
+      card.onclick = () => {
+        currentLevel = idx;
+        loadChallenge();
+        switchTab('game');
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  function loadChallenge() {
+    const stage = challenges[currentLevel];
+    document.getElementById('stage-title').innerText = stage.title;
+    document.getElementById('enemy-sprite').innerText = stage.sprite;
+    document.getElementById('enemy-name').innerText = stage.enemy;
+    document.getElementById('challenge-desc').innerHTML = stage.desc;
+    document.getElementById('hint-text').innerText = stage.hint;
+    document.getElementById('code-input').value = stage.initialCode;
+    document.getElementById('level').innerText = `${stage.level} / ${challenges.length}`;
+  }
+
+  function resetCode() {
+    document.getElementById('code-input').value = challenges[currentLevel].initialCode;
+  }
+
+  function toggleSolution() {
+    document.getElementById('code-input').value = challenges[currentLevel].solution;
+  }
+
+  function runCode() {
+    const userCode = document.getElementById('code-input').value;
+    const consoleEl = document.getElementById('console');
+    const stage = challenges[currentLevel];
+    const enemyEl = document.getElementById('enemy-sprite');
+
+    if (stage.validate(userCode)) {
+      playSound('hit');
+      enemyEl.classList.add('shake');
+      setTimeout(() => enemyEl.classList.remove('shake'), 300);
+
+      score += 100;
+      completedLevels.add(currentLevel);
+      document.getElementById('score').innerText = score;
+      consoleEl.className = "console-output success";
+      consoleEl.innerText = `[SUCCESS] Attack hit! ${stage.enemy} defeated (+100 XP).`;
+
+      currentLevel++;
+      if (currentLevel < challenges.length) {
+        setTimeout(loadChallenge, 1200);
+      } else {
+        setTimeout(() => {
+          playSound('success');
+          document.getElementById('enemy-sprite').innerText = "🏆";
+          document.getElementById('enemy-name').innerText = "Dungeon Master!";
+          document.getElementById('challenge-desc').innerHTML = "All levels cleared!";
+          consoleEl.innerText = "[VICTORY] You mastered Python Quest!";
+        }, 1000);
+      }
+    } else {
+      playSound('error');
+      playerHp -= 15;
+      document.getElementById('hp').innerText = Math.max(0, playerHp);
+      consoleEl.className = "console-output error";
+      consoleEl.innerText = `[FAIL] Incorrect syntax. Check the hint or solution! (-15 HP)`;
+    }
+  }
+
+  function saveCustomLevel() {
+    const title = document.getElementById('build-title').value || "Custom Level";
+    const enemy = document.getElementById('build-enemy').value || "Custom Boss";
+    const sprite = document.getElementById('build-sprite').value || "🤖";
+    const desc = document.getElementById('build-desc').value || "Solve the custom task!";
+    const initialCode = document.getElementById('build-initial').value || "# Write solution below:\n";
+    const hint = document.getElementById('build-hint').value || "No hint provided.";
+    const solution = document.getElementById('build-solution').value || "x = 10";
+
+    const cleanSol = solution.replace(/\s+/g, '');
+
+    const newLevel = {
+      level: challenges.length + 1,
+      title: title,
+      enemy: enemy,
+      sprite: sprite,
+      desc: desc,
+      initialCode: initialCode,
+      hint: hint,
+      solution: solution,
+      isCustom: true,
+      validate: (c) => c.replace(/\s+/g, '').includes(cleanSol)
+    };
+
+    challenges.push(newLevel);
+    alert(`Custom Level "${title}" added successfully!`);
+    switchTab('levels');
+  }
+
+  /* SPEED PRACTICE LOGIC */
+  function selectTime(seconds, el) {
+    selectedPracticeTime = seconds;
+    document.querySelectorAll('.timer-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function startPracticeMode() {
+    practiceTimeLeft = selectedPracticeTime;
+    practiceScore = 0;
+    practiceSolvedCount = 0;
+    practiceHintsUsed = 0;
+
+    document.getElementById('practice-setup').style.display = 'none';
+    document.getElementById('practice-results').style.display = 'none';
+    document.getElementById('practice-active').style.display = 'block';
+
+    document.getElementById('practice-time').innerText = practiceTimeLeft;
+    document.getElementById('practice-score').innerText = practiceScore;
+    document.getElementById('practice-solved').innerText = practiceSolvedCount;
+
+    generateNewPracticeProblem();
+
+    clearInterval(practiceTimerInterval);
+    practiceTimerInterval = setInterval(() => {
+      practiceTimeLeft--;
+      practiceQuestionTimer++;
+
+      document.getElementById('practice-time').innerText = practiceTimeLeft;
+
+      if (practiceQuestionTimer >= 7 && document.getElementById('practice-hint-box').style.display === 'none') {
+        requestPracticeHelp(true);
+      }
+
+      if (practiceTimeLeft <= 0) {
+        endPracticeMode();
+      }
+    }, 1000);
+  }
+
+  function generateNewPracticeProblem() {
+    practiceQuestionTimer = 0;
+    document.getElementById('practice-hint-box').style.display = 'none';
+    document.getElementById('practice-code').value = '';
+
+    const template = practiceGenerators[Math.floor(Math.random() * practiceGenerators.length)];
+    currentPracticeProblem = template.gen();
+    currentPracticeProblem.category = template.category;
+    currentPracticeProblem.title = template.title;
+
+    document.getElementById('practice-category').innerText = currentPracticeProblem.category;
+    document.getElementById('practice-title').innerText = currentPracticeProblem.title;
+    document.getElementById('practice-desc').innerHTML = currentPracticeProblem.desc;
+    document.getElementById('practice-hint-text').innerText = currentPracticeProblem.hint;
+  }
+
+  function requestPracticeHelp(autoTriggered = false) {
+    document.getElementById('practice-hint-box').style.display = 'block';
+    if (!autoTriggered) practiceHintsUsed++;
+    const consoleEl = document.getElementById('practice-console');
+    consoleEl.className = "console-output";
+    consoleEl.innerText = autoTriggered 
+      ? "[AUTO-ASSIST] Looks like you were stuck. Here's a quick hint!" 
+      : "[HELP] Hint unlocked!";
+  }
+
+  function submitPracticeCode() {
+    const userCode = document.getElementById('practice-code').value;
+    const consoleEl = document.getElementById('practice-console');
+
+    if (currentPracticeProblem && currentPracticeProblem.validate(userCode)) {
+      playSound('hit');
+      practiceScore += 150;
+      practiceSolvedCount++;
+
+      document.getElementById('practice-score').innerText = practiceScore;
+      document.getElementById('practice-solved').innerText = practiceSolvedCount;
+
+      consoleEl.className = "console-output success";
+      consoleEl.innerText = "[CORRECT] Great job! Next question generated.";
+      generateNewPracticeProblem();
+    } else {
+      playSound('error');
+      consoleEl.className = "console-output error";
+      consoleEl.innerText = "[INCORRECT] Try again! Check your syntax carefully.";
+    }
+  }
+
+  function endPracticeMode() {
+    clearInterval(practiceTimerInterval);
+    playSound('success');
+
+    document.getElementById('practice-active').style.display = 'none';
+    document.getElementById('practice-results').style.display = 'block';
+
+    document.getElementById('res-score').innerText = practiceScore;
+    document.getElementById('res-solved').innerText = practiceSolvedCount;
+    document.getElementById('res-hints').innerText = practiceHintsUsed;
+  }
+
+  function resetPracticeSetup() {
+    document.getElementById('practice-results').style.display = 'none';
+    document.getElementById('practice-setup').style.display = 'flex';
+  }
+
+  /* FREE EDITOR & ERROR INSPECTOR LOGIC */
+  function analyzeSandboxCode() {
+    const code = document.getElementById('sandbox-code').value;
+    const inspector = document.getElementById('inspector-result');
+    const lines = code.split('\n');
+    let errors = [];
+
+    let openParens = 0;
+    let openBrackets = 0;
+    let openBraces = 0;
+
+    lines.forEach((lineText, idx) => {
+      const lineNum = idx + 1;
+      const trimmed = lineText.trim();
+
+      if (/^(if|elif|else|for|while|def|class)\b/.test(trimmed) && !trimmed.endsWith(':') && !trimmed.includes('#')) {
+        errors.push({
+          line: lineNum,
+          type: "SyntaxError: Missing Colon ( : )",
+          desc: `Control structure on line ${lineNum} missing a trailing colon.`,
+          fix: `Add a colon <code>:</code> at the end of line ${lineNum}. Example: <code>${trimmed}:</code>`
+        });
+      }
+
+      if (/^(if|elif|while)\b/.test(trimmed) && /[^=!<>]=[^=]/.test(trimmed)) {
+        errors.push({
+          line: lineNum,
+          type: "SyntaxError: Invalid Assignment in Condition",
+          desc: `Line ${lineNum} uses a single <code>=</code> (assignment) instead of <code>==</code> (comparison).`,
+          fix: `Replace <code>=</code> with double equals <code>==</code> for comparison.`
+        });
+      }
+
+      if (/^print\s+["'a-zA-Z0-9]/.test(trimmed)) {
+        errors.push({
+          line: lineNum,
+          type: "SyntaxError: Missing Print Parentheses",
+          desc: `In Python 3, <code>print</code> is a function and requires parentheses.`,
+          fix: `Change line ${lineNum} to: <code>print(${trimmed.replace('print ', '')})</code>`
+        });
+      }
+
+      openParens += (lineText.match(/\(/g) || []).length - (lineText.match(/\)/g) || []).length;
+      openBrackets += (lineText.match(/\[/g) || []).length - (lineText.match(/\]/g) || []).length;
+      openBraces += (lineText.match(/\{/g) || []).length - (lineText.match(/\}/g) || []).length;
+    });
+
+    if (openParens !== 0) {
+      errors.push({
+        line: "Global",
+        type: "SyntaxError: Unmatched Parentheses ( )",
+        desc: "You have unclosed or excess parentheses in your script.",
+        fix: "Check that every opening <code>(</code> has a matching closing <code>)</code>."
+      });
+    }
+
+    if (openBrackets !== 0) {
+      errors.push({
+        line: "Global",
+        type: "SyntaxError: Unmatched Square Brackets [ ]",
+        desc: "You have unclosed or excess brackets in your list definitions.",
+        fix: "Ensure all square brackets <code>[</code> are closed with <code>]</code>."
+      });
+    }
+
+    if (errors.length === 0) {
+      inspector.innerHTML = `
+        <div class="error-card clean">
+          <h5>✅ No Syntax Errors Detected!</h5>
+          Your code syntax looks clean and valid!
+        </div>
+      `;
+      return true;
+    } else {
+      let html = '';
+      errors.forEach(err => {
+        html += `
+          <div class="error-card">
+            <h5 style="color: var(--accent-red);">🚨 Line ${err.line}: ${err.type}</h5>
+            <p style="color: var(--text-color); margin-bottom: 5px;">${err.desc}</p>
+            <p style="color: var(--accent-yellow); font-size: 0.8rem;">💡 <strong>Fix:</strong> ${err.fix}</p>
+          </div>
+        `;
+      });
+      inspector.innerHTML = html;
+      return false;
+    }
+  }
+
+  function runSandboxCode() {
+    const code = document.getElementById('sandbox-code').value;
+    const outputEl = document.getElementById('sandbox-output');
+    
+    const isClean = analyzeSandboxCode();
+
+    if (!isClean) {
+      playSound('error');
+      outputEl.className = "console-output error";
+      outputEl.innerText = "[Execution Stopped] Syntax error(s) detected! Check the Error Inspector below.";
+      return;
+    }
+
+    let outputLogs = [];
+    const simulatedPrint = (...args) => {
+      outputLogs.push(args.join(' '));
+    };
+
+    try {
+      playSound('hit');
+      let jsCode = code
+        .replace(/print\((.*?)\)/g, 'simulatedPrint($1)')
+        .replace(/#/g, '//');
+
+      const runFn = new Function('simulatedPrint', jsCode);
+      runFn(simulatedPrint);
+
+      outputEl.className = "console-output success";
+      outputEl.innerText = outputLogs.length > 0 
+        ? outputLogs.join('\n') 
+        : "[Code executed successfully with no print output]";
+    } catch (err) {
+      playSound('error');
+      outputEl.className = "console-output error";
+      outputEl.innerText = `[Runtime Error] ${err.message}`;
+    }
+  }
+
+  function clearSandbox() {
+    document.getElementById('sandbox-code').value = '';
+    document.getElementById('sandbox-output').innerText = '[Console Ready] Editor cleared.';
+    document.getElementById('inspector-result').innerHTML = `
+      <div class="error-card clean">
+        <h5>✅ Editor Cleared</h5>
+        Type code on the left to begin!
+      </div>
+    `;
+  }
+
+  loadChallenge();
+  renderCheatSheet(cheatTopics);
+</script>
+
+</body>
+</html>
