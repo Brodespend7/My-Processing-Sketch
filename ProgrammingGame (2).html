@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Python Quest: Expanded Edition</title>
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --panel-bg: #161b22;
+      --text-color: #c9d1d9;
+      --accent-green: #2ea043;
+      --accent-blue: #58a6ff;
+      --accent-red: #f85149;
+      --accent-yellow: #d29922;
+      --accent-purple: #a371f7;
+      --border-color: #30363d;
+      --font-stack: 'Courier New', Courier, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-stack);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 1000px;
+      background-color: var(--panel-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-bar {
+      display: flex;
+      background-color: #010409;
+      border-bottom: 2px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 12px;
+      background: none;
+      border: none;
+      color: #8b949e;
+      font-family: var(--font-stack);
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover { color: var(--text-color); background-color: rgba(255,255,255,0.02); }
+    .tab-btn.active {
+      color: var(--accent-blue);
+      border-bottom: 3px solid var(--accent-blue);
+      background-color: var(--panel-bg);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .header {
+      background-color: #21262d;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .title { font-size: 1.1rem; color: var(--accent-blue); font-weight: bold; }
+    .stats { display: flex; gap: 20px; font-weight: bold; }
+    .stat-hp { color: var(--accent-red); }
+    .stat-score { color: var(--accent-yellow); }
+    .stat-level { color: var(--accent-green); }
+
+    .main-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 420px;
+    }
+
+    @media (max-width: 768px) {
+      .main-area { grid-template-columns: 1fr; }
+    }
+
+    .screen-panel {
+      padding: 20px;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .enemy-display { text-align: center; }
+    .enemy-avatar { font-size: 3.5rem; margin: 5px 0; transition: transform 0.2s; }
+    .enemy-avatar.shake { animation: shake 0.3s; }
+
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-8px, 0); }
+      50% { transform: translate(8px, 0); }
+      75% { transform: translate(-4px, 0); }
+      100% { transform: translate(0, 0); }
+    }
+
+    .dialogue-box {
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .hint-box {
+      background-color: #1c2128;
+      border-left: 4px solid var(--accent-yellow);
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .editor-panel {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      background-color: #0d1117;
+    }
+
+    .prompt-text { font-size: 0.9rem; margin-bottom: 8px; color: #8b949e; }
+
+    .code-area {
+      width: 100%;
+      height: 200px;
+      background-color: #161b22;
+      color: #e6edf3;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--font-stack);
+      font-size: 0.95rem;
+      resize: none;
+      outline: none;
+    }
+
+    .code-area:focus { border-color: var(--accent-blue); }
+
+    .controls { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+
+    .btn {
+      background-color: var(--accent-green);
+      color: #ffffff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-family: var(--font-stack);
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .btn:hover { opacity: 0.9; }
+    .btn-secondary { background-color: var(--border-color); }
+    .btn-warning { background-color: var(--accent-yellow); color: #000; }
+    .btn-purple { background-color: var(--accent-purple); color: #fff; }
+
+    .console-output {
+      padding: 15px;
+      background-color: #010409;
+      border-top: 1px solid var(--border-color);
+      min-height: 75px;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+    }
+
+    .console-output.success { color: var(--accent-green); }
+    .console-output.error { color: var(--accent-red); }
+
+    .guide-container, .levels-container {
+      padding: 25px;
+      max-height: 550px;
+      overflow-y: auto;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 15px;
+    }
+
+    .guide-card {
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 15px;
+    }
+
+    .guide-card h4 { color: var(--accent-blue); margin-bottom: 8px; }
+    .guide-card p { font-size: 0.85rem; color: #8b949e; margin-bottom: 10px; line-height: 1.3; }
+
+    .guide-code {
+      background-color: #161b22;
+      color: var(--accent-green);
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      white-space: pre-wrap;
+      border: 1px solid #21262d;
+    }
+
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+    }
+
+    .level-card {
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      padding: 15px;
+      border-radius: 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: border 0.2s;
+    }
+
+    .level-card:hover { border-color: var(--accent-blue); }
+    .level-card.completed { border-color: var(--accent-green); }
+  </style>
+</head>
+<body>
+
+<div class="game-container">
+  
+  <div class="tab-bar">
+    <button class="tab-btn active" id="btn-game" onclick="switchTab('game')">🎮 Game</button>
+    <button class="tab-btn" id="btn-levels" onclick="switchTab('levels')">🗺️ Level Map</button>
+    <button class="tab-btn" id="btn-guide" onclick="switchTab('guide')">📖 Python Cheat Sheet</button>
+  </div>
+
+  <div id="tab-game" class="tab-content active">
+    <div class="header">
+      <div class="title" id="stage-title">LEVEL 1</div>
+      <div class="stats">
+        <span class="stat-hp">HP: <span id="hp">100</span></span>
+        <span class="stat-score">XP: <span id="score">0</span></span>
+        <span class="stat-level">Level: <span id="level">1</span>/10</span>
+      </div>
+    </div>
+
+    <div class="main-area">
+      <div class="screen-panel">
+        <div>
+          <div class="enemy-display">
+            <div class="enemy-avatar" id="enemy-sprite">👾</div>
+            <h3 id="enemy-name">Syntax Bug</h3>
+          </div>
+          <div class="dialogue-box" id="challenge-desc">Loading...</div>
+        </div>
+        
+        <div class="hint-box">
+          <strong style="color: var(--accent-yellow);">💡 HINT:</strong><br/>
+          <span id="hint-text">Read the instructions carefully.</span>
+        </div>
+      </div>
+
+      <div class="editor-panel">
+        <div class="prompt-text">Type your Python code:</div>
+        <textarea id="code-input" class="code-area" spellcheck="false"></textarea>
+        <div class="controls">
+          <button class="btn btn-secondary" onclick="resetCode()">Reset</button>
+          <button class="btn btn-warning" onclick="toggleSolution()">Show Solution</button>
+          <button class="btn" onclick="runCode()">Run Code</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="console-output" id="console">
+      [System] Select a level or write code to begin!
+    </div>
+  </div>
+
+  <div id="tab-levels" class="tab-content">
+    <div class="levels-container">
+      <h2 style="color: var(--accent-blue); margin-bottom: 15px;">Select a Level</h2>
+      <div class="level-grid" id="level-select-grid"></div>
+    </div>
+  </div>
+
+  <div id="tab-guide" class="tab-content">
+    <div class="guide-container">
+      <h2 style="color: var(--accent-blue); margin-bottom: 15px;">Python Cheat Sheet</h2>
+      <div class="guide-grid">
+        
+        <div class="guide-card">
+          <h4>1. Variables</h4>
+          <p>Store values in named containers.</p>
+          <div class="guide-code">hero = "Knight"
+hp = 100</div>
+        </div>
+
+        <div class="guide-card">
+          <h4>2. Strings</h4>
+          <p>Text wrapped in quotes.</p>
+          <div class="guide-code">spell = 'Fireball'
+element = "Ice"</div>
+        </div>
+
+        <div class="guide-card">
+          <h4>3. Arithmetic</h4>
+          <p>Basic math operations (+, -, *, /).</p>
+          <div class="guide-code">damage = 10 * 2
+total_hp = 50 + 25</div>
+        </div>
+
+        <div class="guide-card">
+          <h4>4. Comparisons</h4>
+          <p>Evaluate True or False (==, &gt;, &lt;, &gt;=, &lt;=).</p>
+          <div class="guide-code">is_ready = True
+has_key = (keys > 0)</div>
+        </div>
+
+        <div class="guide-card">
+          <h4>5. If / Else Conditions</h4>
+          <p>Branch code based on rules.</p>
+          <div class="guide-code">if hp > 0:
+    status = "Alive"
+else:
+    status = "Defeated"</div>
+        </div>
+
+        <div class="guide-card">
+          <h4>6. Lists</h4>
+          <p>Ordered collections of items.</p>
+
+          <div class="guide-code">items = ["potion", "shield"]
+first_item = items[0] # Index 0</div>
+        </div>
+
+        <div class="guide-card">
+          <h4>7. Dictionaries</h4>
+          <p>Key-Value storage mappings.</p>
+          <div class="guide-code">stats = {"hp": 100, "mp": 50}
+current_hp = stats["hp"]</div>
+        </div>
+
+        <div class="guide-card">
+          <h4>8. For Loops</h4>
+          <p>Repeat actions multiple times.</p>
+          <div class="guide-code">for i in range(3):
+    print("Attack!")</div>
+        </div>
+
+        <div class="guide-card">
+          <h4>9. String Methods</h4>
+          <p>Transform string text easily.</p>
+          <div class="guide-code">name = "hero".upper()  # "HERO"
+clean = "  text  ".strip()</div>
+        </div>
+
+        <div class="guide-card">
+          <h4>10. Functions</h4>
+          <p>Reusable code blocks defined with <code>def</code>.</p>
+          <div class="guide-code">def cast_spell(power):
+    return power * 2</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Simple Audio Synthesizer via Web Audio API
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === 'hit') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+    } else if (type === 'success') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+    } else if (type === 'error') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+    }
+  }
+
+  const challenges = [
+    {
+      level: 1,
+      title: "Level 1: Variables & Strings",
+      enemy: "Syntax Bug",
+      sprite: "👾",
+      desc: "Assign the string <code>'Fireball'</code> to a variable named <code>spell</code>.",
+      initialCode: "# Assign variable below:\n",
+      hint: "Type: spell = 'Fireball'",
+      solution: "spell = 'Fireball'",
+      validate: (c) => /spell=['"]Fireball['"]/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 2,
+      title: "Level 2: Basic Math",
+      enemy: "Type Goblin",
+      sprite: "👺",
+      desc: "Set <code>hp</code> to 100 minus 25 using math subtraction.",
+      initialCode: "# Calculate hp:\nhp = \n",
+      hint: "Type: hp = 100 - 25",
+      solution: "hp = 100 - 25",
+      validate: (c) => /hp=100-25/.test(c.replace(/\s+/g, '')) || /hp=75/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 3,
+      title: "Level 3: Booleans",
+      enemy: "Shield Guard",
+      sprite: "🛡️",
+      desc: "Set the variable <code>is_ready</code> to the boolean value <code>True</code>.",
+      initialCode: "# Set is_ready:\n",
+      hint: "Booleans start with uppercase: is_ready = True",
+      solution: "is_ready = True",
+      validate: (c) => /is_ready=True/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 4,
+      title: "Level 4: If Conditionals",
+      enemy: "Logic Golem",
+      sprite: "🗿",
+      desc: "Write an <code>if</code> statement checking if <code>mana &gt; 10</code>. If true, set <code>can_cast = True</code>.",
+      initialCode: "mana = 20\ncan_cast = False\n\n# Write if condition below:\n",
+      hint: "if mana > 10:\n    can_cast = True",
+      solution: "mana = 20\ncan_cast = False\nif mana > 10:\n    can_cast = True",
+      validate: (c) => /ifmana>10:can_cast=True/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 5,
+      title: "Level 5: Lists",
+      enemy: "Array Hydra",
+      sprite: "🐍",
+      desc: "Create a list named <code>spells</code> containing <code>'fire'</code> and <code>'ice'</code>.",
+      initialCode: "# Create spells list:\n",
+      hint: "spells = ['fire', 'ice']",
+      solution: "spells = ['fire', 'ice']",
+      validate: (c) => /spells=\[['"]fire['"],['"]ice['"]\]/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 6,
+      title: "Level 6: List Indexing",
+      enemy: "Index Phantom",
+      sprite: "👻",
+      desc: "Access the first element of <code>inventory</code> (index 0) and assign it to <code>first_item</code>.",
+      initialCode: "inventory = ['sword', 'shield', 'potion']\n# Get first item:\nfirst_item = \n",
+      hint: "first_item = inventory[0]",
+      solution: "inventory = ['sword', 'shield', 'potion']\nfirst_item = inventory[0]",
+      validate: (c) => /first_item=inventory\[0\]/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 7,
+      title: "Level 7: Dictionaries",
+      enemy: "Data Mimic",
+      sprite: "📦",
+      desc: "Create a dictionary named <code>stats</code> with key <code>'hp'</code> set to <code>100</code>.",
+      initialCode: "# Create stats dictionary:\n",
+      hint: "stats = {'hp': 100}",
+      solution: "stats = {'hp': 100}",
+      validate: (c) => /stats=\{['"]hp['"]:100\}/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 8,
+      title: "Level 8: For Loops",
+      enemy: "Loop Wraith",
+      sprite: "🌀",
+      desc: "Write a <code>for</code> loop iterating over <code>range(3)</code> using variable <code>i</code>, setting <code>hits = i</code> inside.",
+      initialCode: "hits = 0\n# Write loop below:\n",
+      hint: "for i in range(3):\n    hits = i",
+      solution: "hits = 0\nfor i in range(3):\n    hits = i",
+      validate: (c) => /foriinrange\(3\):hits=i/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 9,
+      title: "Level 9: String Upper Method",
+      enemy: "Echo Demon",
+      sprite: "🗣️",
+      desc: "Convert string variable <code>text = 'attack'</code> to uppercase using <code>.upper()</code> and assign to <code>loud_text</code>.",
+      initialCode: "text = 'attack'\n# Convert to upper:\nloud_text = \n",
+      hint: "loud_text = text.upper()",
+      solution: "text = 'attack'\nloud_text = text.upper()",
+      validate: (c) => /loud_text=text\.upper\(\)/.test(c.replace(/\s+/g, ''))
+    },
+    {
+      level: 10,
+      title: "Level 10: Functions",
+      enemy: "Python Dragon",
+      sprite: "🐉",
+      desc: "Define a function named <code>strike</code> that returns integer <code>100</code>.",
+      initialCode: "# Define strike function:\n",
+      hint: "def strike():\n    return 100",
+      solution: "def strike():\n    return 100",
+      validate: (c) => /defstrike\(\):return100/.test(c.replace(/\s+/g, ''))
+    }
+  ];
+
+  let currentLevel = 0;
+  let playerHp = 100;
+  let score = 0;
+  let completedLevels = new Set();
+
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+    document.getElementById(`btn-${tabName}`).classList.add('active');
+    if (tabName === 'levels') renderLevelMap();
+  }
+
+  function renderLevelMap() {
+    const grid = document.getElementById('level-select-grid');
+    grid.innerHTML = '';
+    challenges.forEach((ch, idx) => {
+      const card = document.createElement('div');
+      card.className = `level-card ${completedLevels.has(idx) ? 'completed' : ''}`;
+      card.innerHTML = `
+        <div style="font-size: 2rem;">${ch.sprite}</div>
+        <div style="font-weight: bold; margin-top: 5px;">Level ${ch.level}</div>
+        <div style="font-size: 0.75rem; color: #8b949e;">${ch.enemy}</div>
+      `;
+      card.onclick = () => {
+        currentLevel = idx;
+        loadChallenge();
+        switchTab('game');
+      };
+      grid.appendChild(card);
+    });
+  }
+
+  function loadChallenge() {
+    const stage = challenges[currentLevel];
+    document.getElementById('stage-title').innerText = stage.title;
+    document.getElementById('enemy-sprite').innerText = stage.sprite;
+    document.getElementById('enemy-name').innerText = stage.enemy;
+    document.getElementById('challenge-desc').innerHTML = stage.desc;
+    document.getElementById('hint-text').innerText = stage.hint;
+    document.getElementById('code-input').value = stage.initialCode;
+    document.getElementById('level').innerText = stage.level;
+  }
+
+  function resetCode() {
+    document.getElementById('code-input').value = challenges[currentLevel].initialCode;
+  }
+
+  function toggleSolution() {
+    document.getElementById('code-input').value = challenges[currentLevel].solution;
+  }
+
+  function runCode() {
+    const userCode = document.getElementById('code-input').value;
+    const consoleEl = document.getElementById('console');
+    const stage = challenges[currentLevel];
+    const enemyEl = document.getElementById('enemy-sprite');
+
+    if (stage.validate(userCode)) {
+      playSound('hit');
+      enemyEl.classList.add('shake');
+      setTimeout(() => enemyEl.classList.remove('shake'), 300);
+
+      score += 100;
+      completedLevels.add(currentLevel);
+      document.getElementById('score').innerText = score;
+      consoleEl.className = "console-output success";
+      consoleEl.innerText = `[SUCCESS] Attack hit! ${stage.enemy} defeated (+100 XP).`;
+
+      currentLevel++;
+      if (currentLevel < challenges.length) {
+        setTimeout(loadChallenge, 1200);
+      } else {
+        setTimeout(() => {
+          playSound('success');
+          document.getElementById('enemy-sprite').innerText = "🏆";
+          document.getElementById('enemy-name').innerText = "Dungeon Master!";
+          document.getElementById('challenge-desc').innerHTML = "All 10 levels cleared! You are now ready for real Python projects!";
+          consoleEl.innerText = "[VICTORY] You completed Python Quest!";
+        }, 1000);
+      }
+    } else {
+      playSound('error');
+      playerHp -= 15;
+      document.getElementById('hp').innerText = Math.max(0, playerHp);
+      consoleEl.className = "console-output error";
+      consoleEl.innerText = `[FAIL] Incorrect syntax. Check the hint or solution! (-15 HP)`;
+
+      if (playerHp <= 0) {
+        consoleEl.innerText = "[GAME OVER] Out of HP. Click Reset or restart!";
+      }
+    }
+  }
+
+  loadChallenge();
+</script>
+
+</body>
+</html>
