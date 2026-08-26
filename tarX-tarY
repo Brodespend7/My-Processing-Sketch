@@ -1,0 +1,80 @@
+// brodden Spendlove |8/24/26 |ShapeGame
+int x, y, tarX, tarY, score;
+float d = dist(x, y, tarX, tarY);
+
+void setup() { // runs once at startup
+  size(500, 800);
+  background(#71A6D2);
+  frameRate(60);
+  x = width/2;
+  y = height/2;
+  tarX = int(random(width));
+  tarY = int(random(height));
+}
+void draw () {
+  background(#71A6D2);
+  d = dist(x, y, tarX, tarY);
+  println(d);
+  if (d<50) {
+    score += 1;
+    tarX = int(random(width));
+    tarY = int(random(height));
+  }
+
+  fill(25, 92, 4);
+  if (x<0) {
+    x = width;
+  }
+  if (x>width) {
+    x = 0;
+  }
+  if (y<0) {
+    y = height;
+  }
+  if (y>height) {
+    y = 0;
+  }
+  fill(23, 233, 44);
+  rectMode(CENTER);
+  rect(tarX, tarY, 25, 25);
+  fill(23, 233, 44);
+  ellipse(x, y, 50, 50);
+
+  scorePanel();
+}
+// WASD Movements
+void keyPressed() {
+  if (key =='s' || key == 'S') {
+    y  = y + 20;
+  } else if (key =='w' || key == 'W') {
+    y = y - 20;
+  } else if (key =='a' || key == 'A') {
+    x = x - 20;
+  } else if (key =='d' || key == 'D') {
+    x = x + 20;
+  }
+  // Arrow Key Movements
+  if (key == CODED) {
+    if (keyCode == DOWN ) {
+      y+=20;
+    }
+    if (keyCode == UP ) {
+      y-=20;
+    }
+    if (keyCode == LEFT ) {
+      x-=20;
+    }
+    if (keyCode == RIGHT ) {
+      x+=20;
+    }
+  }
+}
+
+
+void scorePanel() {
+  fill(23, 44, 200, 127);
+  rect(width/2, 15, width, 30);
+  fill(255);
+  textSize(25);
+  text("Score: " + score, 15, 24);
+}
