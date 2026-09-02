@@ -1,4 +1,4 @@
-// brodden Spendlove |8/24/26 |ShapeGame
+//   |8/24/26 |ShapeGame
 int x, y;
 
 void setup() { // runs once at startup
