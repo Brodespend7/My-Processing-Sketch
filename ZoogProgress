@@ -1,4 +1,4 @@
-// Brodden Spendlove | aug 24 2026 | Zoog
+//   | aug 24 2026 | Zoog
 
 void setup() { // setup runs once at startup
   size(500,600);
