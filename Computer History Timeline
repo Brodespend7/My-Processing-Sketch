@@ -1,0 +1,76 @@
+
+// Brodden Spendlove | 8/26/26 | Timeline
+
+void setup() {
+  size(900, 400);
+  background(0);
+}
+
+void draw() {
+  background(90);
+
+  // Title Information
+  textSize(40);
+  textAlign(CENTER);
+  fill(255);
+  text("Computer History Timeline", width/2, 50);
+  textSize(25);
+  text("By Brodden Spendlove", width/2, 80);
+
+  // Render Timeline
+  stroke(#FFFFFF);
+  strokeWeight(3);
+  line(50, 250, 850, 250);
+  // 8 timeLineEvents
+  // MY MODIFICATION: Replaced "title" / "the title" placeholders with real event data */
+  timeLineEvent(200, 150, "1946 | ENIAC", "ENIAC: First general-purpose electronic computer",true);
+  timeLineEvent(400, 150, "1951  |UNIVAC", "UNIVAC I: First commercial computer",true);
+  timeLineEvent(600, 150, "1971 | Intel", "Intel 4004: First commercial microprocessor",true);
+  timeLineEvent(800, 150, "1976  | Apple", "Apple 1st computer released",true);
+  timeLineEvent(150, 350, "1981 | IBM", "IBM Personal Computer launched",false);
+  timeLineEvent(350, 350, "1984  | Apple", "Apple Macintosh released",false);
+  timeLineEvent(550, 350, "1991  | WWW", "World Wide Web opens to public",false);
+  timeLineEvent(750, 350, "2007 | First ", "First iPhone released",false);
+}
+
+void timeLineEvent(int x, int y, String title, String descr, boolean top) {
+  if(top == true) {
+  line(x,y,x,y+98);
+  }else{
+    line(x,y,x,y-98);
+
+  }
+  rectMode(CENTER);
+  stroke(255);
+  strokeWeight(1);
+  fill(125);
+  rect(x, y, 100, 25,45);
+
+  fill(255);
+  // MY MODIFICATION: Added text sizing for box labels */
+  textSize(16);
+  text(title, x, y + 5);
+
+  // Hover effect and description text
+  if (mouseX > x - 50 && mouseX < x + 50 &&
+      mouseY > y - 20 && mouseY < y + 20) {
+    textSize(20);
+    // MY MODIFICATION: Repositioned hover text to y=230 to fix overlap */
+    text(descr, width/2, 230); // Displays text right above the main line
+  }
+}
+
+
+/*
+METHOD:
+timeLineEvent
+
+PARAMETER:
+String title
+
+ARGUMENT:
+1946
+
+MY MODIFICATION:
+Replaced placeholder text ("title", "the title") with actual computer history milestones and dates. I also added explicit font sizing and moved the description hover position to y=230 so text renders cleanly above the main line without covering the lower boxes.
+*/
