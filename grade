@@ -1,0 +1,12 @@
+// brodden spendlove  | 2 Sept 20206 | Grades
+float grade;
+
+void setup() {
+  grade = random(0.0,4.1);
+}
+
+void draw() {
+ println(grade); 
+}
+
+
