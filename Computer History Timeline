@@ -1,5 +1,5 @@
 
-// Brodden Spendlove | 8/26/26 | Timeline
+//  | 8/26/26 | Timeline
 
 void setup() {
   size(900, 400);
