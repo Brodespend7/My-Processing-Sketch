@@ -1,0 +1,94 @@
+// Shape game by brodden spendlove 8/28/26
+
+int x, y, score, tarX, tarY, countDown;
+int targetx = 100;
+int targety = 100;
+
+PImage player, target ;
+
+void setup() {
+  size(500, 800);
+  background(#5C76DE);
+  frameRate(30);
+  x = width / 2;
+  y = height / 2;
+  targetx = int(random(50, 450));
+  targety = int(random(50, 750));
+  score = 0;
+  countDown = 1000;
+  player = loadImage("BlueGhost.png"); // Piskel
+  
+  
+  
+  player = loadImage("BlueGhost.png");
+  imageMode(CENTER);
+  image(player,x,y);
+  countDown = countDown -2;
+  if(countDown <1 ); {
+    
+}
+
+void draw() { 
+
+}
+  background(113, 166, 210);
+  
+  // keypress wasd movement
+  if (keyPressed) {
+    if (key == 'w' || key == 'W' || keyCode == UP) {
+      y = y - 7;
+    }
+    if (key == 's' || key == 'S' || keyCode == DOWN) {
+      y = y + 7;
+    }
+    if (key == 'a' || key == 'A' || keyCode == LEFT) {
+      x = x - 7;
+    }
+    if (key == 'd' || key == 'D' || keyCode == RIGHT) {
+      x = x + 7;
+    }
+  }
+}
+  // top score box
+  fill(23, 44, 200);
+  rect(0, 0, 500, 40);
+
+  fill(255);
+  textSize(28);
+  text("Score: " + score, 15, 24);
+  text("Countdown: " + countDown, 200, 24);
+
+  // target green box
+  fill(23, 233, 44);
+  rect(targetx, targety, 25, 25);
+  
+
+  // player image with a safety fallback so it won't crash if the file is missing
+  if (player != null) {
+    image(player, x, y, 50, 50);
+  } else {
+    fill(25, 92, 4);
+    ellipse(x, y, 50, 50);
+  }
+
+  // screen wrap
+  if (x < 0) {
+    x = 500;
+  }
+  if (x > 500) {
+    x = 0;
+  }
+  if (y < 0) {
+    y = 800;
+  }
+  if (y > 800) {
+    y = 0;
+  }
+
+  // check if touching
+  if (dist(x, y, targetx, targety) < 37) {
+    score = score + 1;
+    targetx = int(random(50, 450));
+    targety = int(random(50, 750));
+  }
+}
