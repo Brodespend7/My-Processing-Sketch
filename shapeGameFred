@@ -1,0 +1,130 @@
+// Shape game by brodden spendlove 8/28/26
+Target fred;
+int x, y, score, tarX, tarY, countDown;
+int targetx = 100;
+int targety = 100;
+PImage player, target ;
+float d;
+
+void setup() {
+  size(500, 800);
+  background(#5C76DE);
+  frameRate(30);
+  fred =  new Target();
+  x = width / 2;
+  y = height / 2;
+  targetx = int(random(50, 450));
+  targety = int(random(50, 750));
+  score = 0;
+  countDown = 1000;
+  player = loadImage("BlueGhost.png");
+  
+  
+  player = loadImage("BlueGhost.png");
+  imageMode(CENTER);
+}
+
+void draw() {
+  background(113, 166, 210);
+  fred.display();
+  
+  // keypress wasd movement
+  if (keyPressed) {
+    if (key == 'w' || key == 'W' || keyCode == UP) {
+      y = y - 7;
+    }
+    if (key == 's' || key == 'S' || keyCode == DOWN) {
+      y = y + 7;
+    }
+    if (key == 'a' || key == 'A' || keyCode == LEFT) {
+      x = x - 7;
+    }
+    if (key == 'd' || key == 'D' || keyCode == RIGHT) {
+      x = x + 7;
+    }
+  }
+
+  // top score box
+  fill(23, 44, 200);
+  rect(0, 0, 500, 40);
+
+  fill(255);
+  textSize(18);
+  text("Score: " + score, 15, 25);
+
+  // target green box
+  fill(23, 233, 44);
+  rect(targetx, targety, 25, 25);
+
+  // player image with a safety fallback so it won't crash if the file is missing
+  if (player != null) {
+    image(player, x, y, 50, 50);
+  } else {
+    fill(25, 92, 4);
+    ellipse(x, y, 50, 50);
+  }
+
+  // screen wrap
+  if (x < 0) {
+    x = 500;
+  }
+  if (x > 500) {
+    x = 0;
+  }
+  if (y < 0) {
+    y = 800;
+  }
+  if (y > 800) {
+    y = 0;
+  }
+
+  // check if touching
+  if (dist(x, y, targetx, targety) < 37) {
+    score = score + 1;
+    targetx = int(random(50, 450));
+    targety = int(random(50, 750));
+  }
+}
+
+
+
+
+
+
+
+
+
+Target
+
+
+
+
+
+
+class Target {
+  // Member Variables
+  int x, y, size;
+  color c1;
+  PImage p1;
+
+  // Constructor
+  Target() {
+    x = int(random(width));
+    y = int(random(height)); // Fixed: changed x to y
+    size = int(random(20, 100));
+    c1 = color(random(255), random(255), random(255));
+    p1 = loadImage("");
+    // p1 = loadImage("target.png"); // Fixed: pass a valid filename or remove if unused
+  }
+
+  // Member Methods
+  void display() {
+    fill(c1);
+    ellipse(x, y, size, size);
+  }
+
+  void relocate() {
+    x = int(random(width));
+    y = int(random(height));
+  }
+}
